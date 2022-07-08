@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 import random
 import logging
-from discord.ext import commands
 
 load_dotenv()
 
@@ -13,31 +12,37 @@ handler = logging.FileHandler(filename= "discord.log", encoding= "utf-8", mode =
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-intents = discord.Intents().all()
-bot = commands.Bot(command_prefix='?', description= None, intents=intents)
+bot = discord.Bot(test_guild=[368827007628476416])
 
 @bot.event
 async def on_ready():
-    print("Logged on as {0.user}".format(bot))
+    print(f"{bot.user} is ready and online!")
 
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
-    
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+@bot.command(name = "hello", description = "Say hello to the bot")
+async def hello(ctx):
+    await ctx.respond("Hey!")
 
-    await bot.process_commands(message)
-    
-
-@bot.command()
+@bot.command(description = "Shuts the bot down")
 async def shutdown(ctx):
     await ctx.bot.close()
 
-@bot.command()
-async def add(ctx, left: int, right: int):
-    """Adds two numbers together."""
-    await ctx.send(left + right)
+@bot.command(description = "Roll the Dice, in format Xd Xd Modifier")
+async def roll(
+    ctx, 
+    first: discord.Option(str),
+    second: discord.Option(str),
+    mod: discord.Option(int) = 0):
+
+    try:   
+        d1 = int(first.replace("d", ""))
+        d2 = int(second.replace("d",""))
+        r1 = random.choice(range(1, d1 + 1))
+        r2 = random.choice(range(1, d2 + 1))
+        if r1 == r2 >= 6:
+            await ctx.respond(":heart_on_fire: **Critical!** :heart_on_fire: ")
+        await ctx.respond(f"Result: ({r1}, {r2}) + {mod} = **{r1 + r2 + mod}**")
+    
+    except (IndexError, ValueError):
+        await ctx.respond("Sorry, I don't know what that means.")
 
 bot.run(os.getenv('TOKEN'))
