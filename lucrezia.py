@@ -1,6 +1,7 @@
 import discord
 import os
 from dotenv import load_dotenv
+from discord import default_permissions
 import random
 import logging
 
@@ -18,13 +19,9 @@ bot = discord.Bot(test_guild=[368827007628476416])
 async def on_ready():
     print(f"{bot.user} is ready and online!")
 
-@bot.command(name = "hello", description = "Say hello to the bot")
+@bot.command(name = "hello", description = "Say hello to Lucrezia")
 async def hello(ctx):
-    await ctx.respond("Hey!")
-
-@bot.command(description = "Shuts the bot down")
-async def shutdown(ctx):
-    await ctx.bot.close()
+    await ctx.respond("Good Evening, Dear Guests.")
 
 @bot.command(description = "Roll the Dice, in format Xd Xd Modifier")
 async def roll(
@@ -44,5 +41,14 @@ async def roll(
     
     except (IndexError, ValueError):
         await ctx.respond("Sorry, I don't know what that means.")
+
+
+@bot.command(description = "Remove the Remnants of the Past. (Clears 14 days of messages)")
+@default_permissions(administrator=True)
+async def clear(ctx):
+    msglist = []
+    async for x in ctx.channel.history():
+        msglist.append(x)
+    await ctx.channel.delete_messages(msglist)
 
 bot.run(os.getenv('TOKEN'))
